@@ -6,6 +6,7 @@ define(function(require) {
 	require('fancytree');
 	require('bootstarp');
 	require("libs/jquery.validate");
+	require('mCustomScrollbar');
 	var ConversationEvents = require('events/conversation-event');
 	var ConversationModel = require('models/conversation');
 	var StarEvent = require('events/star-event');
@@ -16,9 +17,24 @@ define(function(require) {
 	var TagsView = require('views/tags-view');
 	var treeData;
 	var tree = {};
+	
+	$(".rf-col-2").mCustomScrollbar({theme:"minimal-dark"});
 
 	var TreeNodeView = Backbone.View.extend({	
 		template: _.template($('#tpl-tree-node').html()),
+		
+		initialize : function() {
+			this.render();
+		},
+		
+		render : function() {
+			this.$el.html(this.template());
+			return this;
+		}
+	});
+	
+	var TreeFolderView = Backbone.View.extend({	
+		template: _.template($('#tpl-tree-folder').html()),
 		
 		initialize : function() {
 			this.render();
@@ -61,12 +77,12 @@ define(function(require) {
 	}
 
 	$("#copyNodeModal").on('show.bs.modal',function(e){
-		$('#nodeUrl').attr('checked','checked');
-		$('#nodeMethodType').attr('checked','checked');
-		$('#nodeBody').attr('checked','checked');
-		$('#nodeHeaders').attr('checked','checked');
-		$('#nodeAuth').attr('checked','checked');
-        $('#nodeTags').attr('checked','checked');
+		$('#nodeUrl').prop('checked', true);
+		$('#nodeMethodType').prop('checked', true);
+		$('#nodeBody').prop('checked', true);
+		$('#nodeHeaders').prop('checked', true);
+		$('#nodeAuth').prop('checked', true);
+        $('#nodeTags').prop('checked', true);
 
 	});
 
@@ -138,10 +154,30 @@ define(function(require) {
 			currentElm.addClass('open');
 			
 			var rect = event.currentTarget.getBoundingClientRect();
-			currentElm.children("ul").css({"position": "fixed", "left":rect.right , "top": rect.bottom});
+			currentElm.children("ul").css({"position": "fixed", "left":rect.left , "top": rect.bottom});
 		}
 	}
+	
+	var handleMenuzIndex = function(event){
+		var currentElm = $(event.currentTarget);
+		var treeTitle = $(currentElm.closest('.fancytree-title'));
+		var treeIcon = treeTitle.parent().children('.glyphicon');
+		var zIndexTitle = {zIndex : 'auto'};
+		var zIndexIcons = {zIndex : 2};
+		if(event.type === 'focus'){
+			zIndexTitle = {zIndex : 4};
+			zIndexIcons = {zIndex : 6};
+		} 
+		treeTitle.css(zIndexTitle);
+		treeIcon.css(zIndexIcons);
+		
+	};
 
+	$("#newRequestDropdown").click(function(event){
+	    var rect = event.currentTarget.getBoundingClientRect();
+        $(event.currentTarget).children("ul").css({"position": "fixed", "left":rect.left , "right":window.innerWidth-rect.right, "top": rect.bottom});
+	});
+	
 	
 	$("#requestBtn").bind("click", function() {
 		$("#requestModal").find("#source").val("request");
@@ -159,6 +195,11 @@ define(function(require) {
 		});
 	});
 	
+    $("#moreOptionsDropdown").click(function(event){
+	    var rect = event.currentTarget.getBoundingClientRect();
+        $(event.currentTarget).children("ul").css({"position": "fixed", "left":rect.left , "right":window.innerWidth-rect.right, "top": rect.bottom});
+	});
+    
 	$("#collapseAllNodes").bind("click", function() {
 		$("#tree").fancytree("getRootNode").visit(function(node){
 			node.setExpanded(false);
@@ -446,19 +487,19 @@ define(function(require) {
 				var conversation = new ConversationModel(response.get("conversation"));
 				var rfRequestObj = conversation.get('rfRequest');
                 var tagsArray = response.get('tags');
-                var headers = $('#nodeHeaders').attr('checked') == 'checked' ? rfRequestObj['rfHeaders'] : null;
+                var headers = $('#nodeHeaders').prop('checked') == true ? rfRequestObj['rfHeaders'] : null;
                 if(headers != null && headers.length >0) {
                     for(var i = 0; i < headers.length; i++){
-                        headers[i].headerValue = headers[i].headerValueString;
+                        headers[i].headerValue = headers[i].headerValue;
                     }
                 }
 				var rfRequest = {
-				    apiUrl : $('#nodeUrl').attr('checked') == 'checked' ? rfRequestObj['apiUrlString'] : '',
-				    apiBody : $('#nodeBody').attr('checked') == 'checked' ? rfRequestObj['apiBodyString'] : '',
-				    methodType : $('#nodeMethodType').attr('checked') == 'checked' ? rfRequestObj['methodType'] : '',
+				    apiUrl : $('#nodeUrl').prop('checked') == true ? rfRequestObj['apiUrl'] : '',
+				    apiBody : $('#nodeBody').prop('checked') == true ? rfRequestObj['apiBody'] : '',
+				    methodType : $('#nodeMethodType').prop('checked') == true ? rfRequestObj['methodType'] : '',
 				    headers : headers,
-                    basicAuthDTO : $('#nodeAuth').attr('checked') == 'checked' ? rfRequestObj['basicAuth'] : null,
-                    digestAuthDTO : $('#nodeAuth').attr('checked') == 'checked' ? rfRequestObj['digestAuth'] : null
+                    basicAuthDTO : $('#nodeAuth').prop('checked') == true ? rfRequestObj['basicAuth'] : null,
+                    digestAuthDTO : $('#nodeAuth').prop('checked') == true ? rfRequestObj['digestAuth'] : null
                     //ToDo: add auth
                     
 			    };
@@ -471,7 +512,7 @@ define(function(require) {
 			    var nodeId = $("#copyNodeId").val();
 			    var node = treeObj.getNodeByKey(nodeId);
                 var tags=[];
-                tags = $('#nodeTags').attr('checked') == 'checked' ? tagsArray : null;
+                tags = $('#nodeTags').prop('checked') == true ? tagsArray : null;
                 
                 tree.createNewNode({   
 					nodeName : $("#copyNodeTextField").val(),
@@ -562,9 +603,8 @@ $("#deleteRequestBtn").bind("click", function() {
 	}
 
 	$.ajax({
-		url : APP.config.baseUrl + '/nodes/' + node.data.id,
+		url : APP.config.baseUrl + '/nodes/' + nodeId,
 		type : 'delete',
-		dataType : 'json',
 		contentType : "application/json",
 		success : function() {
 			node.remove();
@@ -576,12 +616,13 @@ $("#deleteWorkspaceBtn").bind("click", function() {
 	$.ajax({
 		url : APP.config.baseUrl + '/workspaces/' + APP.appView.getCurrentWorkspaceId(),
 		type : 'delete',
-		dataType : 'json',
 		contentType : "application/json",
 		success : function(data) {
-			location.reload();
+            console.log("location.host "+location.host);
+            window.location = window.location.protocol+"//"+location.host;
 		}
 	});
+    $("#deleteWorkspaceModal").modal("hide");
 });
 
 $("#deleteTagBtn").bind("click", function() {
@@ -591,8 +632,6 @@ $("#deleteTagBtn").bind("click", function() {
 		dataType : 'json',
 		contentType : "application/json",
 		success : function(data) {
-			var tagView = new TagView();
-			tagView.showTags();
 			var tagsView = new TagsView();
 			tagsView.showTags();
 			var node = new NodeModel({
@@ -610,20 +649,24 @@ $("#deleteTagBtn").bind("click", function() {
 	});	
 });
 
-$('.col-1-toggle-btn').toggle(function() {
-	$('.rf-col-1').hide();
-	$('.rf-col-2').css('left', '0%');
-	$('.rf-col-3').css('left', '33%');
-	$('.rf-col-3').removeClass('col-xs-6').addClass("col-xs-8");
-	$('#col1-toggle-icon').removeClass('fa-angle-double-left').addClass("fa-angle-double-right");
+$('.col-1-toggle-btn').bind('click',function(){
+	if($('#col1-toggle-icon').hasClass('fa-angle-double-left')){
+		$('.rf-col-1').hide();
+		$('.rf-col-2').css('left', '0%');
+		$('.rf-col-3').css('left', '33%');
+		$('.rf-col-3').removeClass('col-xs-6').addClass("col-xs-8");
+		$('#col1-toggle-icon').removeClass('fa-angle-double-left').addClass("fa-angle-double-right");
+	}else{
+		$('.rf-col-1').show();
+		$('.rf-col-2').css('left', '17%');
+		$('.rf-col-3').css('left', '50%');
+		$('.rf-col-3').removeClass('col-xs-8').addClass("col-xs-6");
+		$('#col1-toggle-icon').removeClass('fa-angle-double-right').addClass("fa-angle-double-left");
+	}
 
-}, function() {
-	$('.rf-col-1').show();
-	$('.rf-col-2').css('left', '17%');
-	$('.rf-col-3').css('left', '50%');
-	$('.rf-col-3').removeClass('col-xs-8').addClass("col-xs-6");
-	$('#col1-toggle-icon').removeClass('fa-angle-double-right').addClass("fa-angle-double-left");
+
 });
+
 $('.header-toggle-btn').toggle(function() {
 	$('.navbar-fixed-top').hide();
 	$('body').css('padding-top', '0px');
@@ -635,25 +678,27 @@ $('.header-toggle-btn').toggle(function() {
 	$('#header-toggle-icon').removeClass('fa-angle-double-down').addClass("fa-angle-double-up");
 });
 
-$('.right-pannel-toggle-btn').toggle(function() {
+$('.right-pannel-toggle-btn').bind('click',function() {
+  if($('#full-screen-icon').hasClass('fa fa-arrows-alt')){
 	$('.rf-col-1').hide();
 	$('.rf-col-2').hide();
 	$('.rf-col-3').css('left', '0%');
 	$('.rf-col-3').removeClass('col-xs-6').addClass("col-xs-12");
 	$('#full-screen-icon').removeClass('fa fa-arrows-alt').addClass("fa fa-angle-double-right");
 
-}, function() {
+}else {
 	$('.rf-col-1').show();
 	$('.rf-col-2').show();
 	$('.rf-col-2').css('left', '17%');
 	$('.rf-col-3').css('left', '50%');
 	$('.rf-col-3').removeClass('col-xs-12').addClass("col-xs-6");
 	$('#full-screen-icon').removeClass('fa fa-angle-double-right').addClass("fa fa-arrows-alt");
+}
 });
 
 $("#tree").fancytree(
 {
-	extensions : [ "glyph" ],
+	extensions : [ "glyph", "wide" ],
 	glyph : {
 		map : {
 			doc : "glyphicon glyphicon-file",
@@ -672,6 +717,13 @@ $("#tree").fancytree(
 			loading : "glyphicon glyphicon-refresh"
 		}
 	},
+      selectMode: 2,
+      wide: {
+        iconWidth: "1em",     // Adjust this if @fancy-icon-width != "16px"
+        iconSpacing: "0.5em", // Adjust this if @fancy-icon-spacing != "3px"
+        levelOfs: "1.5em"     // Adjust this if ul padding != "16px"
+      },
+    
 	dnd : {
 		autoExpandMS : 400,
 		focusOnClick : true,
@@ -717,12 +769,19 @@ dragDrop : function(node, data) {
 					createNode: function(event, data) {
 						var editNodeBtn = data.node.li.getElementsByClassName("edit-node");
 						var copyNodeBtn = data.node.li.getElementsByClassName("copy-node");
-						var runNodeBtn = data.node.li.getElementsByClassName("run-node");
 						if(editNodeBtn && editNodeBtn.length > 0){
 							editNodeBtn[0].addEventListener("click", function(){editNode(data.node);});
 							copyNodeBtn[0].addEventListener("click", function(){copyNode(data.node);});
-							runNodeBtn[0].addEventListener("click", function(){runNode(data.node);});
 						}
+                        var runNodeBtn = data.node.li.getElementsByClassName("run-node");
+                        if(runNodeBtn && runNodeBtn.length > 0){
+                            runNodeBtn[0].addEventListener("click", function(){runNode(data.node);});
+                        }
+                        else{
+                            //var runFolderBtn = data.node.li.getElementsByClassName("run-folder");
+                            //runFolderBtn[0].addEventListener("click", function(){runNode(data.node);});
+                            console.log("Run folder yet to be implemented");
+                        }
 						var deleteNodeBtn = data.node.li.getElementsByClassName("delete-node");
 						if(deleteNodeBtn && deleteNodeBtn.length > 0){
 							deleteNodeBtn[0].addEventListener("click", function(){deleteNode(data.node);});
@@ -792,7 +851,13 @@ function nodeConverter(serverNode, uiNode) {
 		uiNode.description = serverNode.description;
 		uiNode.nodeType = serverNode.nodeType;
 		
-		var treeNodeView = new TreeNodeView();
+		var treeNodeView;
+		if(serverNode.nodeType == 'FOLDER'){
+		 	treeNodeView = new TreeFolderView();
+		}
+		else{
+			treeNodeView = new TreeNodeView();
+		}
 		if(serverNode.nodeType == 'ENTITY'){
 			uiNode.title = '&nbsp;<span><i class="fa fa-database color-gray"></i></span>&nbsp;' + serverNode.name + treeNodeView.template();
 		}
@@ -813,7 +878,7 @@ function nodeConverter(serverNode, uiNode) {
 
 			if(serverNode.children[i].method){
 				colorCode = getColorCode(serverNode.children[i].method);
-				title = '<span class="lozenge left '+ colorCode +' auth_required">'+serverNode.children[i].method+'</span>' + '<span class = "large-text" title = "' + serverNode.children[i].name+'">' + serverNode.children[i].name + '</span>'+ treeNodeView.template()
+				title = '<span class="lozenge left '+ colorCode +' auth_required">'+serverNode.children[i].method+'</span>' + '<span class = "large-text" title = "' + serverNode.children[i].name+'">' + serverNode.children[i].name + '</span>'+ treeNodeView.template();
 			}else{
 				title = serverNode.children[i].name + treeNodeView.template()
 			}
@@ -1050,12 +1115,14 @@ function nodeConverter(serverNode, uiNode) {
 				console.log(uiSideTreeData);
 				uiTree.push(uiSideTreeData);
 				treeObj.reload(uiTree);
-				//Make the tree expanded once it is loaded
+                window.history.pushState(treeData, treeData.name, APP.config.root+"projects/"+treeData.id);
+                //Make the tree expanded once it is loaded
 				$("#tree").fancytree("getRootNode").visit(function(node){
 					node.setExpanded(true);
 				});
 
 				$('.menu-arrow').unbind("click").bind("click", nodeMenuEventHandler);
+				$('.dropdown-toggle').on('focus blur',handleMenuzIndex);
 			}
 		});
 	};

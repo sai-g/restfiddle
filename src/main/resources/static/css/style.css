@@ -88,17 +88,18 @@ ul.fancytree-container {
 	display: block;
 }
 
-#starred-items .list-group-item:first-child {
+#starred-items .list-group-item, #tagged-items .list-group-item, #history-items .list-group-item {
+	border-left: 0px;
+	border-right: 0px;
+}
+
+#starred-items .list-group-item:first-child, #tagged-items .list-group-item:first-child, #history-items .list-group-item:first-child {
 	border-top-right-radius: 0px;
 	border-top-left-radius: 0px;
 }
-#starred-items .list-group-item:last-child {
+#starred-items .list-group-item:last-child, #tagged-items .list-group-item:last-child, #history-items .list-group-item:last-child {
 	border-bottom-right-radius: 0px;
 	border-bottom-left-radius: 0px;
-}
-
-.list-group-item{
-	margin-bottom:3px;	
 }
 
 /* CSS for login page */
@@ -228,7 +229,9 @@ ul.fancytree-container {
 	position: fixed; 
 	overflow-y: hidden;
 	width:33%;
-	z-index: 100;
+	z-index: -1;
+	padding-left:0px;
+	padding-right:0px;
 }
 
 #starred-items {
@@ -240,6 +243,7 @@ ul.fancytree-container {
 	height: 100%; 
 	overflow-y: hidden;
 	position: fixed;
+    z-index: -10;
 }
 
 .rf-col-1:hover,.rf-col-2:hover ,.rf-col-3:hover{
@@ -288,9 +292,15 @@ ul.fancytree-container {
 	outline: none;
 }
 
-.tt-dropdown-menu {
+.tt-hint {
+	color: LightGrey;
+}
+
+.tt-menu {
 	width: 100%;
 	padding: 8px 0;
+	overflow:hidden;
+	border-radius: 3px;
 	background-color: #fff;
 	border: 1px solid #ccc;
 	-webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
@@ -298,13 +308,19 @@ ul.fancytree-container {
 	box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
 .tt-suggestion {
-	padding: 3px 20px;
+	padding: 8px 20px;
 }
 
 .tt-suggestion.tt-cursor {
 	color: #fff;
 	background-color: #0097cf;
 }
+
+.tt-suggestion:hover {
+	color: #fff;
+	background-color: #0097cf;
+}
+
 .color-gray{
 	color: gray;
 }
@@ -343,6 +359,7 @@ ul.fancytree-container {
 ul .dropdown-menu li{
 	color: #333 !important;
 	padding-left: 7px;
+    cursor: pointer;
 }
 
 #apiRequestNameEdit{
@@ -502,7 +519,7 @@ ul .dropdown-menu li{
   border: none;
   padding-bottom: 5px;
   outline: none;
-  color: #999;
+  color: #333;
 }
 
 .circle{
@@ -540,6 +557,7 @@ ul .dropdown-menu li{
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
+  font-size: 13px;
 }
 
 @media (max-width:767px) {
@@ -551,4 +569,14 @@ ul .dropdown-menu li{
 
 .activity{
 	overflow: hidden;
+}
+
+.mCS-minimal-dark.mCSB_scrollTools{
+	width:5px;
+}
+.mCS-minimal-dark .mCSB_container{
+	overflow: visible;
+}
+.fancytree-title {
+    font-size: 13px   
 }

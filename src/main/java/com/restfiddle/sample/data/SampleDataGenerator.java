@@ -48,9 +48,7 @@ import com.restfiddle.dto.RfRequestDTO;
 import com.restfiddle.dto.RoleDTO;
 import com.restfiddle.dto.TagDTO;
 import com.restfiddle.dto.WorkspaceDTO;
-import com.restfiddle.entity.BaseNode;
 import com.restfiddle.entity.Config;
-import com.restfiddle.entity.Conversation;
 import com.restfiddle.entity.HttpRequestHeader;
 import com.restfiddle.entity.Project;
 import com.restfiddle.entity.Tag;
@@ -289,29 +287,32 @@ public class SampleDataGenerator {
 	rfRequestDTO2.setApiBody(jsonObject.toString(4));
 	postConversationDTO.setRfRequestDTO(rfRequestDTO2);
 
-	Conversation createdConversation = conversationController.create(conversationDTO);
-	Conversation createdPostConversation = conversationController.create(postConversationDTO);
-	conversationDTO.setId(createdConversation.getId());
-	postConversationDTO.setId(createdPostConversation.getId());
+	ConversationDTO createdConversation = conversationController.create(conversationDTO);
+	ConversationDTO createdPostConversation = conversationController.create(postConversationDTO);
+	
 	// firstFolderNode.setConversationDTO(conversationDTO);
 
-	BaseNode createdFolderNode = nodeController.create(firstProjectRefId, firstFolderNode);
+	NodeDTO createdFolderNode = nodeController.create(firstProjectRefId, firstFolderNode);
 
 	NodeDTO childNode = new NodeDTO();
 	childNode.setName("GET Workspace");
 	childNode.setDescription("A workspace is a collection of projects. This API returns list of available workspaces.");
 	childNode.setProjectId(firstProjectId);
-	childNode.setConversationDTO(conversationDTO);
-	BaseNode createdChildNode = nodeController.create(createdFolderNode.getId(), childNode);
+	childNode.setConversationDTO(createdConversation);
+	NodeDTO createdChildNode = nodeController.create(createdFolderNode.getId(), childNode);
 	nodeController.addTags(createdChildNode.getId(), tags);
+	createdConversation.setNodeDTO(createdChildNode);
+	conversationController.update(createdConversation.getId(), createdConversation);
 
 	NodeDTO secondNode = new NodeDTO();
 	secondNode.setName("POST Workspace");
 	secondNode.setDescription("A workspace is a collection of projects. This API is used to create a new workspace.");
 	secondNode.setProjectId(firstProjectId);
-	secondNode.setConversationDTO(postConversationDTO);
-	BaseNode createdSecondNode = nodeController.create(firstProjectRefId, secondNode);
+	secondNode.setConversationDTO(createdPostConversation);
+	NodeDTO createdSecondNode = nodeController.create(firstProjectRefId, secondNode);
 	nodeController.addTags(createdSecondNode.getId(), tags);
+	createdPostConversation.setNodeDTO(createdSecondNode);
+	conversationController.update(createdPostConversation.getId(), createdPostConversation);
 
 	NodeDTO dummyNode = new NodeDTO();
 	dummyNode.setName("Dummy Node");
@@ -337,19 +338,20 @@ public class SampleDataGenerator {
 	starredNode.setStarred(Boolean.TRUE);
 	starredNode.setProjectId(firstProjectId);
 	starredNode.setConversationDTO(conversationDTO);
-
-	nodeController.create(firstProjectRefId, starredNode);
+	NodeDTO createdStarredNode = nodeController.create(firstProjectRefId, starredNode);
+	createdConversation.setNodeDTO(createdStarredNode);
+	conversationController.update(createdConversation.getId(), createdConversation);
     }
 
     private void loadTagData() {
 	TagDTO tagDTO = new TagDTO();
 	tagDTO.setName("Important");
-	Tag impTag = tagController.create(tagDTO);
+	Tag impTag = tagController.create(demoWorkspaceId, tagDTO);
 	impTagId = impTag.getId();
 
 	TagDTO secondTag = new TagDTO();
 	secondTag.setName("Wishlist");
-	Tag wlTag = tagController.create(secondTag);
+	Tag wlTag = tagController.create(socialWorkspaceId, secondTag);
 	wlTagId = wlTag.getId();
     }
 

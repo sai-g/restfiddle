@@ -130,7 +130,7 @@ define(function(require) {
 								$("#projectTextArea").val("");
 							},
 							error : function(e) {
-								alert('Some unexpected error occured Please try later.');
+								alert('Some unexpected error occurred Please try later.');
 							}
 						});
 					}else{
@@ -165,38 +165,45 @@ $('#tagTextField').keyup(function() {
 
 
 $("#saveTagBtn").unbind("click").bind("click", function() {
-
 	if($("#tagForm").valid()){
 		var that = this;
-		APP.tags.fetch({
-			success : function(response){
-				that.collection = response;
-				var tagWithSameName = that.collection.findWhere({name : $("#tagTextField").val()});
-				if(!tagWithSameName){
-					var tag = new TagModel({
-						name : $("#tagTextField").val(),
-						description : $("#tagTextArea").val()
-					});
-					tag.save(null, {
-						success : function(response){
-							var tagView = new TagView();
-							tagView.showTags();
-							var tagsView = new TagsView();
-							tagsView.showTags();
-							$("#tagTextField").val("");
-							$("#tagTextArea").val("");
-							$('#tagModal').modal("hide");
-						},
-						error : function(e) {
-							alert('Some unexpected error occured Please try later.');
-						}
-					});
+        APP.workspaces.fetch({
+				success : function(response){
+					var currentWorkspace = _.findWhere(response.models,{id : APP.appView.getCurrentWorkspaceId()});
+					var tags = currentWorkspace.get('tags');
+					var tagWithSameName = _.findWhere(tags,{name : $("#tagTextField").val()});
+					if(!tagWithSameName){
+						var tag = new TagModel({
+							name : $("#tagTextField").val(),
+							description : $("#tagTextArea").val()
+						});
+						tag.save(null, {
+							success : function(response) {
+							    var tagsView = new TagsView();
+                                tagsView.addOne(tag);
+							    tagsView.showTags();
+								$("#tagTextField").val("");
+							    $("#tagTextArea").val("");
+							    $('#tagModal').modal("hide");
+                                $('#tree').show();
+                                var node = new NodeModel({
+								id : APP.appView.getCurrentRequestNodeId()
+							});
+							node.fetch({
+								success : function(response) {
+									APP.tagsLabel.display(response.get('tags'));
+								}
+							});	
+							},
+							error : function(e) {
+								alert('Some unexpected error occurred Please try later.');
+							}
+						});
+					}else{
+						$('#tagTextField').after('<label class="text-danger" id="tag-name-error">Tag name already exists</label>');
+					}
 				}
-				else{
-					$('#tagTextField').after('<label class="text-danger" id="tag-name-error">Tag name already exists</label>');
-				}
-			}
-		})
+			})
 	}
 });	
 
@@ -254,7 +261,7 @@ $("#editProjectBtn").unbind("click").bind("click", function() {
 						    });	
 						},
 						error : function(e) {
-							alert('Some unexpected error occured Please try later.');
+							alert('Some unexpected error occurred Please try later.');
 						}
 					});
 				};
@@ -295,13 +302,13 @@ $("#tagEditForm").submit(function(e) {
 });
 
 $("#editTagBtn").unbind("click").bind("click", function() {
-
 	if($("#tagEditForm").valid()){
 		var that = this;
-		APP.tags.fetch({
+		APP.workspaces.fetch({
 			success : function(response){
-				that.collection = response;
-				var tagWithSameName = that.collection.findWhere({name : $("#editTagTextField").val()});
+                var currentWorkspace = _.findWhere(response.models,{id : APP.appView.getCurrentWorkspaceId()});
+				var tags = currentWorkspace.get('tags');
+				var tagWithSameName = _.findWhere(tags,{name : $("#editTagTextField").val()});
 				var saveTag = function(){
 					var tag = new TagModel({
 						id : $("#editTagId").val(),
@@ -310,10 +317,9 @@ $("#editTagBtn").unbind("click").bind("click", function() {
 					});
 					tag.save(null, {
 						success : function(response) {
-							var tagView = new TagView();
-							tagView.showTags();
-							var tagsView = new TagsView();
-							tagsView.showTags();
+							
+							APP.tags.fetch();
+							
 							var node = new NodeModel({
 								id : APP.appView.getCurrentRequestNodeId()
 							});
@@ -328,7 +334,7 @@ $("#editTagBtn").unbind("click").bind("click", function() {
 							
 						},
 						error : function(e) {
-							alert('Some unexpected error occured Please try later.');
+							alert('Some unexpected error occurred Please try later.');
 						}
 					});
 				}
@@ -373,6 +379,9 @@ $("#editWorkspaceBtn").unbind("click").bind("click", function() {
 	if($("#workspaceEditForm").valid()){
 		var that = this;
 
+        $('#dd-workspace-wrapper').off('click');
+        $('#dd-workspace-wrapper').empty();
+        
 		var saveWorkspace = function(){
 			var newWorkspace = new Workspace({
 				id : APP.appView.getCurrentWorkspaceId(),
@@ -386,7 +395,7 @@ $("#editWorkspaceBtn").unbind("click").bind("click", function() {
 					$("#editWorkspaceModal").modal('hide');					
 				},
 				error : function(e) {
-					alert('Some unexpected error occured Please try later.');
+					alert('Some unexpected error occurred Please try later.');
 				}
 			});
 		};
@@ -427,6 +436,15 @@ $("#createNewCollaboratorBtn").bind("click", function() {
 
 		success : function() {
 			alert('New collaborator added successfully!');
+			$("#profileName").val("");
+			$("#profileEmail").val("");
+			$("#profilePassword").val("");
+			APP.users.fetch({success : function(response){
+                    $("#rfUsers").html('');
+				    response.each(function(user) {
+					$("#rfUsers").append("<li>&nbsp;&nbsp;<span class='glyphicon glyphicon-user'></span>&nbsp;&nbsp;"+user.attributes.name+"</li>");
+				    });				
+			}});
 		}
 	});
 });
@@ -527,7 +545,7 @@ function saveWorkspace() {
 						},
 						error : function(e) {
 							$("#workspaceModal").modal("hide");
-							alert('Some unexpected error occured Please try later.');
+							alert('Some unexpected error occurred Please try later.');
 						}
 					});
 				}else{
@@ -540,10 +558,10 @@ function saveWorkspace() {
 };
 
 $("#deleteProjectBtn").bind("click", function() {
+    var projId = $("#deleteProjectId").val();
 	$.ajax({
-		url : APP.config.baseUrl + '/workspaces/' + APP.appView.getCurrentWorkspaceId() + "/projects/" + $("#deleteProjectId").val(),
+		url : APP.config.baseUrl + '/workspaces/' + APP.appView.getCurrentWorkspaceId() + "/projects/" + projId,
 		type : 'delete',
-		dataType : 'json',
 		contentType : "application/json",
 		success : function(data) {
 		  APP.workspaces.fetch({
@@ -555,13 +573,94 @@ $("#deleteProjectBtn").bind("click", function() {
 					projectList.push(new ProjectModel(p));
 				});
 				var projectView = new ProjectView({model : projectList});
+                var projParent = $('a[data-project-id="' + projId + '"]').parent();
+                projParent.empty();
+                console.log("Calling render :"+projectList);
 				projectView.render();
 				TreeView.resetTree();
-				$("#deleteProjectModal").modal('hide');
 		  	}
 		  })
-			
 		}
 	});
+    $("#deleteProjectModal").modal('hide');
 });
+
+		$("#collaboratorModal").on('show.bs.modal',function(e){
+			APP.users.fetch({
+			    success : function(response){
+			    	console.log(response)
+					$('#collaborators').html('');
+					console.log(response);
+					response.each(function(user) {
+						$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
+					});
+
+					$(".deleteCollaborator").each(function(i, element){
+				        $(element).click(function(event){
+				           	$.ajax({
+								url : APP.config.baseUrl + '/users/' + event.currentTarget.dataset.id,
+								type : 'delete',
+								contentType : "application/json",
+								success : function(data) {
+				                    APP.users.fetch({
+				                        success : function(response){
+				                        	$("#rfUsers").html('');
+				                        	$('#collaborators').html('');
+										    response.each(function(user) {
+												$("#rfUsers").append("<li>&nbsp;&nbsp;<span class='glyphicon glyphicon-user'></span>&nbsp;&nbsp;"+user.attributes.name+"</li>");
+										    });	
+										    response.each(function(user) {
+												$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash' id = 'deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
+											});			
+							         	}
+							    	 });
+								}
+			            	});
+				        });
+    				});	
+			    }	
+			});
+            $('#addCollaboratorForm').hide();
+		});
+
+		$('#addCollaborator').bind('click',function(){
+			$('#addCollaboratorForm').show();
+			$("#collaboratorName").val("");
+			$("#collaboratorEmailId").val("");
+			$("#collaboratorPassword").val("");
+		});
+
+		$("#saveCollaborator").bind("click",function(){
+			$.ajax({
+				url : APP.config.baseUrl + '/users',
+				type : 'post',
+				dataType : 'json',
+				contentType : "application/json",
+				data : JSON.stringify({
+					name : $("#collaboratorName").val(),
+					password : $("#collaboratorPassword").val(),
+					email : $("#collaboratorEmailId").val()
+				}),
+
+				success : function() {
+					$("#collaboratorName").val("");
+					$("#collaboratorPassword").val("");
+					$("#collaboratorEmailId").val("");
+					$('#addCollaboratorForm').hide();
+					
+					APP.users.fetch({
+						success : function(response){
+		                    $("#rfUsers").html('');
+                        	$('#collaborators').html('');
+						    response.each(function(user) {
+								$("#rfUsers").append("<li>&nbsp;&nbsp;<span class='glyphicon glyphicon-user'></span>&nbsp;&nbsp;"+user.attributes.name+"</li>");
+						    });	
+						    response.each(function(user) {
+								$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash' id = 'deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
+							});					
+					    }
+					});
+		        }
+		    });    
+	});
 });

@@ -73,11 +73,11 @@
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 					<h4 class="modal-title" id="myModalLabel">New Request</h4>
 				</div>
-				<input type="hidden" class="form-control" id="source">
+				<input type="hidden" class="form-control" id="source"/>
 				<div class="modal-body">
 					<div class="form-group">
 						<form id = "newRequestForm">
-						<input class="form-control" id="requestName" placeholder="Enter Request Name" name = "newRequestName" required><br>
+						<input class="form-control" id="requestName" placeholder="Enter Request Name" name = "newRequestName" required/><br>
 						<textarea id="requestTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
 					    </form>
 					</div>
@@ -105,7 +105,7 @@
 				<div class="modal-body">
 					<form id = "newSocketForm">
 						<div class="form-group">
-							<input class="form-control" id="newSocketName" placeholder="Enter Socket Name" name = "newSocketName" required> <br>
+							<input class="form-control" id="newSocketName" placeholder="Enter Socket Name" name = "newSocketName" required/> <br>
 							<textarea class="form-control" id="socketTextArea" rows="3" placeholder="Enter Description"></textarea>
 						</div>
 					</form>
@@ -154,7 +154,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="collaboratorModal" tabindex="-1">
+	<!-- <div class="modal fade" id="collaboratorModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -172,7 +172,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<div class="modal fade" id="manageCollaboratorsModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -350,7 +350,7 @@
 			</div>
 			<div class="modal-body">
 				<form id = "editNodeForm">
-					<input type="hidden" id="editNodeId">
+					<input type="hidden" id="editNodeId"/>
 					<input type="text" id="editNodeTextField" class="form-control" placeholder="Enter Node Name" name = "editNodeName" required> <br>
 					<textarea id="editNodeTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
 					<br>
@@ -373,9 +373,9 @@
 			</div>
 			<div class="modal-body">
 				<form>
-				    <input type="hidden" id="copyNodeId">
-				    <input type="hidden" id="copyNodeType">
-					<input type="text" id="copyNodeTextField" class="form-control" placeholder="Enter Node Name" name = "copyNodeName" required> <br>
+				    <input type="hidden" id="copyNodeId"/>
+				    <input type="hidden" id="copyNodeType"/>
+					<input type="text" id="copyNodeTextField" class="form-control" placeholder="Enter Node Name" name = "copyNodeName" required/> <br>
 					<textarea id="copyNodeTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
 					<br>
 				  <div class = "row">
@@ -409,8 +409,8 @@
 			</div>
 			<div class="modal-body">
 				<form id = "projectEditForm">
-					<input type="hidden" id="editProjectId">
-					<input type="text" id="editProjectTextField" class="form-control" placeholder="Enter Project Name" name="projectName" required> <p class="text-danger" id="project-edit-error"></p><br>
+					<input type="hidden" id="editProjectId"/>
+					<input type="text" id="editProjectTextField" class="form-control" placeholder="Enter Project Name" name="projectName" required/> <p class="text-danger" id="project-edit-error"></p><br>
 					<textarea id="editProjectTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
 					<br>
 				</form>
@@ -431,8 +431,8 @@
 			</div>
 			<div class="modal-body">
 				<form id ="tagEditForm">
-					<input type="hidden" id="editTagId">
-					<input type="text" id="editTagTextField" class="form-control" placeholder="Enter Tag Name" name ="tagName" required> 
+					<input type="hidden" id="editTagId"/>
+					<input type="text" id="editTagTextField" class="form-control" placeholder="Enter Tag Name" name ="tagName" required/> 
 					<p class="text-danger" id="tag-name-edit-error"></p><br>
 					<textarea id="editTagTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
 					<br>
@@ -454,8 +454,8 @@
 			</div>
 			<div class="modal-body">
 				<form id = "workspaceEditForm">
-					<input type="hidden" id="editWorkspaceId">
-					<input type="text" id="editWorkspaceTextField" class="form-control" placeholder="Enter Workspace Name" name ="workspaceName" required>
+					<input type="hidden" id="editWorkspaceId"/>
+					<input type="text" id="editWorkspaceTextField" class="form-control" placeholder="Enter Workspace Name" name ="workspaceName" required/>
 					<p class="text-danger" id="workspace-edit-error"></p>
 					<br>
 					<textarea id="editWorkspaceTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
@@ -477,6 +477,7 @@
 				<h4 class="modal-title" id="myModalLabel">Delete Workspace</h4>
 			</div>
 			<div class="modal-body">
+				<input type="hidden" id="deleteWorkspaceId"/>
 				Are You Sure You Want To Delete Current Workspace?
 			</div>
 			<div class="modal-footer">
@@ -508,7 +509,7 @@
 				<h4 class="modal-title" id="myModalLabel">Delete Node</h4>
 			</div>
 			<div class="modal-body">
-				<input type="hidden" id="deleteNodeId">
+				<input type="hidden" id="deleteNodeId"/>
 				Are You Sure You Want To Delete Selected Node?
 			</div>
 			<div class="modal-footer">
@@ -526,7 +527,7 @@
 				<h4 class="modal-title" id="myModalLabel">Delete Project</h4>
 			</div>
 			<div class="modal-body">
-				<input type="hidden" id="deleteProjectId">
+				<input type="hidden" id="deleteProjectId"/>
 				Are You Sure You Want To Delete Selected Project?
 			</div>
 			<div class="modal-footer">
@@ -544,7 +545,7 @@
 				<h4 class="modal-title" id="myModalLabel">Delete Tag</h4>
 			</div>
 			<div class="modal-body">
-				<input type="hidden" id="deleteTagId">
+				<input type="hidden" id="deleteTagId"/>
 				Are You Sure You Want To Delete Selected Tag?
 			</div>
 			<div class="modal-footer">
@@ -562,8 +563,8 @@
 				<h4 class="modal-title" id="myModalLabel">Delete Environment</h4>
 			</div>
 			<div class="modal-body">
-				<input type="hidden" id="deleteEnvId">
-				Are You Sure You Want To Delete Selected Environment?
+				<input type="hidden" id="deleteEnvId"/>
+				 Selected Environment?
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
@@ -602,6 +603,35 @@
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 				<button type="button" class="btn btn-primary">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="collaboratorModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title" id="tagModalLabel">Manage Collaborators</h4>
+			</div>
+			<div class="modal-body">
+				<div id= "collaborators"></div>
+				<a id = "addCollaborator">Add Collaborators</a>
+				<form id = "addCollaboratorForm">
+					<div class = "row">
+						<div class = "col-lg-8 col-md-8 col-sm-10">
+							<br>
+							<input type="text" id="collaboratorName" class="form-control" name = "collaboratorName" placeholder="Name" required> <br>
+							<input type="email" id="collaboratorEmailId" class="form-control" name = "collaboratorEmailId" placeholder="Email Id" required><br>
+							<input type="password" id="collaboratorPassword" class="form-control" name = "collaboratorPassword" placeholder="Password" required>
+							<br>
+							<button type="button" class="btn btn-default pull-right" id = "saveCollaborator">Save</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 			</div>
 		</div>
 	</div>

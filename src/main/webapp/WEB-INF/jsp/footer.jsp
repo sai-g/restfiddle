@@ -10,10 +10,11 @@
                     <span class= "fa fa-angle-down"></span> <span class="sr-only">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li class="edit-project"><i class="fa fa-pencil fa-fw"></i> Edit Workspace</li>
-                    <li class="delete-project"><i class="fa fa-trash-o fa-fw"></i> Delete Workspace</li>
+                    <li class="edit-workspace"><i class="fa fa-pencil fa-fw"></i> Edit Workspace</li>
+                    <li class="delete-workspace"><i class="fa fa-trash-o fa-fw"></i> Delete Workspace</li>
                     <li class="divider"></li>
                     <li class="export-workspace"><i class="fa fa-download fa-fw"></i> Export Workspace</li>
+                    <li class="export-workspace"><i class="fa fa-download fa-fw"></i> Export (Swagger)</li>
                 </ul>
             </div></div>
 		</div>
@@ -31,6 +32,7 @@
                     <li class="delete-project"><i class="fa fa-trash-o fa-fw"></i> Delete Project</li>
                     <li class="divider"></li>
                     <li class="export-project"><i class="fa fa-download fa-fw"></i> Export Project</li>
+                    <li class="export-project"><i class="fa fa-download fa-fw"></i> Export (Swagger)</li>
                 </ul>
             </div>
         </a>
@@ -44,7 +46,11 @@
 				<h5 class="dummyUserName"><@=user.name@></h5>
 			</div>
 			<div class="col-xs-6">
+			<@ var name = $(".username").text(); if ( $.trim(name) != user.name ) { @>
 				<a href="#" data-user-id=<@=user.id@> class="deleteUser">Delete</a>
+			<@ } else{ @>
+				<span>Logged in</span>
+			<@ }  @>
 			</div>
 		</div>
 	</script>
@@ -63,11 +69,22 @@
     <script type="text/template" id="tpl-tags-list-item">
         <input type = "checkbox" id = <@=tag.name@>>&nbsp;<@=tag.name@>&nbsp;&nbsp;
     </script>
+    
+     <script type="text/template" id="assert-result-list-item">
+         <tr><td><span class="<@=result.iconClass@> circle"></span><@=result.status@></td><td><@=result.propertyName@></td><td><@=result.comparator@></td><td><@=result.expectedValue@></td><td><@=result.actualValue@></td><tr>                   
+    </script>
+    
 	<script type="text/template" id="tpl-star-list-item">
-		<a href="#" class="list-group-item" data-star-id=<@=node.id@> data-star-ref-id=<@=node.id@> ><span class="<@=node.className@>"><@=node.methodType@></span>&nbsp;&nbsp;<@=node.name@></a>
+		<a href="#" class="list-group-item" data-star-id=<@=node.id@> data-star-ref-id=<@=node.id@> data-toggle="tooltip" data-placement="bottom" title=<@=node.apiURL@>>
+			<span class="<@=node.className@>"><@=node.methodType@></span>&nbsp;&nbsp;<@=node.name@>
+             <div><span>&nbsp;&nbsp;<@=node.time@></span><span>&nbsp;<@=node.runBy@><span></div>
+		</a>
 	</script>
     <script type="text/template" id="tpl-tagged-node-list-item">
-		<a href="#" class="list-group-item" data-node-id=<@=node.id@> data-tag-node-id=<@=node.id@> ><span class="<@=node.className@>"><@=node.methodType@></span>&nbsp;&nbsp;<@=node.name@></a>
+		<a href="#" class="list-group-item" data-node-id=<@=node.id@> data-tag-node-id=<@=node.id@> data-toggle="tooltip" data-placement="bottom" title=<@=node.apiURL@>>
+			<span class="<@=node.className@>"><@=node.methodType@></span>&nbsp;&nbsp;<@=node.name@>
+             <div><span>&nbsp;&nbsp;<@=node.time@></span><span>&nbsp;<@=node.runBy@><span></div>
+		</a>
 	</script>
 	<script type="text/template" id="tpl-project-runner-list-item">
         <div class="div-list-item">
@@ -77,9 +94,14 @@
         </div>
 	</script>
 	<script type="text/template" id="tpl-history-list-item">
-		<a href="#" class="list-group-item" data-history-id=<@=conversation.id@> data-history-ref-id=<@=conversation.id@> >
+		<a href="#" class="list-group-item" data-history-id=<@=conversation.id@> data-history-ref-id=<@=conversation.id@> data-toggle="tooltip" data-placement="bottom" title=<@=conversation.rfRequestDTO.apiUrl@> >
 			<div class="<@=conversation.className@>"><@=conversation.rfRequestDTO.methodType@></div>
-            <div class = "activity"><@=conversation.rfRequestDTO.apiUrl@></div>
+			<@ if (conversation.name == null || conversation.name == "" ) { @>
+   			 	<div class="activity"><@=conversation.rfRequestDTO.apiUrl@></div>
+			<@ }  else { @>
+				<div class = "activity"><@=conversation.name@></div>
+			<@ } @>
+            
              <span><@=conversation.time@></span><span>&nbsp;<@=conversation.runBy@></span>
         </a>
 	</script>
@@ -97,6 +119,7 @@
                     <option>Date</option>
                     <option>Object</option>
                     <option>Array</option>
+					<option>Relation</option>
                     <option>Geographic point</option>
                 </select>
             </div>
@@ -275,6 +298,9 @@
     </script>
     <script type="text/template" id="tpl-tree-node">
     &nbsp;<div class="btn-group menu-arrow"><button type="button" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-angle-down" data-toggle="dropdown"></span></button><ul class="dropdown-menu"><li class="edit-node"><i class="fa fa-pencil fa-fw"></i> Edit Node</li><li class="delete-node"><i class="fa fa-trash-o fa-fw"></i> Delete Node</li><li class="copy-node"><i class="fa fa-copy fa-fw"></i> Copy Node</li><li class="run-node"><i class="fa fa-play fa-fw"></i> Run Node</li></ul></div>
+    </script>
+<script type="text/template" id="tpl-tree-folder">
+    &nbsp;<div class="btn-group menu-arrow"><button type="button" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-angle-down" data-toggle="dropdown"></span></button><ul class="dropdown-menu"><li class="edit-node"><i class="fa fa-pencil fa-fw"></i> Edit Node</li><li class="delete-node"><i class="fa fa-trash-o fa-fw"></i> Delete Node</li><li class="copy-node"><i class="fa fa-copy fa-fw"></i> Copy Node</li><li class="run-folder"><i class="fa fa-play fa-fw"></i> Run Folder</li></ul></div>
     </script>
     <script type="text/template" id = "tpl-environment-list-item">
        <span><@=conversation.rfRequest.methodType@></span>

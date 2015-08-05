@@ -19,7 +19,7 @@ define(function(require) {
             "click .delete-tag" : "deleteTag"
 		},
 		
-		render : function(eventName) {
+		render : function() {
 			$(this.el).html(this.template({
 				tag : this.model.toJSON()
 			}));
@@ -37,7 +37,8 @@ define(function(require) {
 			}else{
 				$('.btn-group').removeClass('open');
 				currentElm.addClass('open');
-				
+				var rect = event.currentTarget.getBoundingClientRect();
+			    currentElm.children("ul").css({"position": "fixed", "left":rect.left , "top": rect.bottom});
 			}
 		},
         
@@ -55,6 +56,7 @@ define(function(require) {
 
 		showTaggedNodes : function(){
 			console.log("Inside showTaggedNodes");
+            window.history.pushState("", "tag", APP.config.root + "workspaces/" + APP.appView.getCurrentWorkspaceId() + "/tags/"+this.model.get('id'));
 			$('#rf-col-1-body').find('li').each(function(){
 				$(this).removeClass('active');
 			});
@@ -68,37 +70,25 @@ define(function(require) {
 		}
 	});
 
-var TagView = Backbone.View.extend({
-	initialize : function() {
-		this.listenTo(APP.Events, TagEvents.FETCH, this.handleTags);
-	},
-
-	showTags : function(event){
-		APP.tags.fetch({success : function(response){
-			$("#rfTags").html('');
-			response.each(function(tag) {
-				var tagListView = new TagListItemView({
-					model : tag
-				});
-				$("#rfTags").append(tagListView.render().el);
-			});
-
-		}});			
-	},
-		//TODO : Remove me!
-		handleTags : function(event){
-			APP.tags.fetch({success : function(response){
-				response.each(function(tag) {
-					var tagListView = new TagListItemView({
-						model : tag
-					});
-				});
-			}});
+	var TagView = Backbone.View.extend({
+	    el : '#rfTags',
+	    addOne : function(model){
+				var tagListView = new TagListItemView({model: model});
+				this.$el.append(tagListView.render().el);
+				tagListView.$el.find('a').trigger('click');
+				return this;
+			},
+		initialize : function() {
+		 	this.listenTo(this.collection, 'sync', this.render);
 		},
-		
-		render : function(eventName) {
+			
+		render : function(isDefautlView) {
+	        this.$el.html('');
+			_.each(this.collection.models,function(p, index){
+				var tagListView = new TagListItemView({model: p});
+				this.$el.append(tagListView.render().el);
+			},this);
 			console.log("TagView#render");
-			return this;
 		}
 	});
 

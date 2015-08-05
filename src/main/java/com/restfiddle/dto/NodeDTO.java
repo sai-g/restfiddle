@@ -29,11 +29,16 @@ public class NodeDTO extends BaseDTO {
 
     private Boolean starred;
 
+  //API method type - GET/POST/PUT/DELETE etc.
+    private String method;
+    
     private ConversationDTO conversationDTO;
 
     private GenericEntityDTO genericEntityDTO;
 
     private List<TagDTO> tags;
+    
+    private String apiURL;
 
     public String getProjectId() {
 	return projectId;
@@ -97,6 +102,22 @@ public class NodeDTO extends BaseDTO {
 
     public void setGenericEntityDTO(GenericEntityDTO genericEntityDTO) {
 	this.genericEntityDTO = genericEntityDTO;
+    }
+
+    public String getMethod() {
+	return method;
+    }
+
+    public void setMethod(String method) {
+	this.method = method;
+    }
+
+    public String getApiURL() {
+        return apiURL;
+    }
+
+    public void setApiURL(String apiURL) {
+        this.apiURL = apiURL;
     }
 
 }

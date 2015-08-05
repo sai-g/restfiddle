@@ -10,13 +10,15 @@ define(function(require) {
 	var WorkspaceEvents = require('events/workspace-event');
 	
 	var ProjectModel = require('models/project');
-	//var TagModel = require('models/tag');
+	var TagModel = require('models/tag');
 	
 	var ProjectView = require('views/project-view');
 	var ManageEnvironmentView = require('views/environment-view');
 	var UserView = require('views/user-view');
 	var TagView = require('views/tag-view');
 	var TagsView = require('views/tags-view');
+	
+	$(".rf-col-1").mCustomScrollbar({theme:"minimal-dark"});
 	
 	//Initialize all tooltips.
 	$('[data-toggle="tooltip"]').tooltip();
@@ -43,15 +45,34 @@ define(function(require) {
 			}));
 			return this;
 		},
+		showTags : function() {
+			var tagList = [];
+			_.each(this.model.get('tags'), function(p){
+				tagList.push(new TagModel(p));
+			});
+			var tagView = new TagView({model : tagList});
+			tagView.render();
+			var tagsView = new TagsView({model : tagList});
+			tagsView.render();
+		},
+		
 		showProjects : function() {
 		
-			var projectList = []
+			var projectList = [];
 			_.each(this.model.get('projects'), function(p){
 				projectList.push(new ProjectModel(p));
 			});
 			var projectView = new ProjectView({model : projectList});
 			projectView.render();
 			
+            var tagList = [];
+			_.each(this.model.get('tags'), function(p){
+				tagList.push(new TagModel(p));
+			});
+            
+			var tagsView = new TagsView({model : tagList});
+			tagsView.render();
+            
             if(APP.workspaceNameView != undefined){
                 APP.workspaceNameView.undelegateEvents();
             }
@@ -70,6 +91,8 @@ define(function(require) {
 		template : _.template($('#tpl-workspace-list-item').html()),
 		events : {
 			"click .hover-down-arrow" : "preventParentElmSelection",
+            "click .edit-workspace" : "editWorkspace",
+            "click .delete-workspace" : "deleteWorkspace",
 			"click .export-workspace" : "exportWorkspace"
 		},
         
@@ -90,12 +113,25 @@ define(function(require) {
 			}else{
 				$('.btn-group').removeClass('open');
 				currentElm.addClass('open');
-
+                var rect = event.currentTarget.getBoundingClientRect();
+			    currentElm.children("ul").css({"position": "fixed", "left":rect.left , "top": rect.bottom});
 			}
 			
 		},
+        editWorkspace : function(){
+            $("#editWorkspaceId").val(this.model.get('id'));
+            $("#editWorkspaceTextField").val(this.model.get('name'));
+            $("#editWorkspaceTextArea").val(this.model.get('description'));
+            $("#editWorkspaceModal").modal("show");
+        },
+        
+        deleteWorkspace : function(){
+            $("#deleteWorkspaceId").val(this.model.get('id'));
+            $("#deleteWorkspaceModal").modal("show");
+        },
 		exportWorkspace : function(){
-			window.open('http://localhost:8080/api/workspaces/' + this.model.get('id'));
+           var url = window.location.protocol+"//"+location.host + APP.config.baseUrl + '/workspaces/' + this.model.get('id') + '/export';  
+           window.open(url);
 		}
 	});
 	
@@ -112,29 +148,36 @@ define(function(require) {
 			var userView = new UserView();
 			userView.showUsers();
 			
-			var tagView = new TagView();
-			tagView.showTags();
+			/*var tagView = new TagView();
+			tagView.showTags();*/
 
-			var tagsView = new TagsView();
-			tagsView.showTags();
+			/*var tagsView = new TagsView();
+			tagsView.showTags();*/
 
 			var environmentView   = new ManageEnvironmentView();
 			environmentView.render();
 			
 			APP.workspaces.fetch({success : function(response){
-				console.log('fetched wokrspace');
 				if(response.at(0)){
 					var projects = response.at(0).get('projects');
 					var projectList = [];
 					_.each(projects, function(p){
 						projectList.push(new ProjectModel(p));
 					});
+                    APP.workspaceNameView = new WorkspaceNameView({model : response.at(0)});
+					APP.workspaceNameView.render();
 					WorkspaceEvents.triggerChange(response.at(0).get('id'));
 					var projectView = new ProjectView({model : projectList});
 					projectView.render();
-					
-					APP.workspaceNameView = new WorkspaceNameView({model : response.at(0)});
-					APP.workspaceNameView.render();
+                    
+                    var tags = response.at(0).get('tags');
+					var tagList = [];
+					_.each(tags, function(p){
+						tagList.push(new TagModel(p));
+					});
+				
+                    var tagsView = new TagsView({model : tagList});
+					tagsView.render();
 				}
 			}});
 		},
@@ -145,7 +188,6 @@ define(function(require) {
 		},
 
 		render : function(eventName) {
-			
 			$(this.el).html(this.template({
 				workspace : this.model.toJSON()[0]
 			}));

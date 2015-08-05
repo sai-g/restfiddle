@@ -70,7 +70,7 @@
             </div>
             &nbsp;&nbsp;
             <div class="btn-group">
-                <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#assertsModal" id="manageAsserts">Asserts <span class="badge">0</span></button>
+                <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#assertsModal" id="manageAsserts">Asserts <span id="assertCount" class="badge">0</span></button>
                 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
                     <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
                 </button>
@@ -142,7 +142,7 @@
                         <div class="row">
                             <div class="col-xs-2 rf-col-xs-2-padding" >
                                 <select class="apiRequestType form-control">
-                                    <option>GET</option>
+                                    <option selected>GET</option>
                                     <option>POST</option>
                                     <option>PUT</option>
                                     <option>DELETE</option>
@@ -318,7 +318,7 @@
             <div>
                 <p>
                     <span id="responseToggle" class='glyphicon glyphicon glyphicon-chevron-down'></span>&nbsp;&nbsp;<b>Response</b>
-                <div class="pull-right">&nbsp;&nbsp;<span>Status : </span><span id="status-code"></span>&nbsp;&nbsp;<span>Time : <span id="req-time"></span> ms</span>&nbsp;&nbsp;<span>Size : <span id="content-size"></span> KB</span></div>
+                <div class="pull-right">&nbsp;&nbsp;<span>Status : </span><span id="status-code"></span>&nbsp;&nbsp;<span>Time : <span id="req-time"></span> ms</span>&nbsp;&nbsp;<span>Size : <span id="content-size"></span> Bytes</span></div>
                 </p>
             </div>
 
@@ -326,7 +326,7 @@
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#res-tab-body" data-toggle="tab">Body</a></li>
                     <li><a href="#res-tab-header" data-toggle="tab">Header</a></li>
-                    <li><a href="#res-tab-assert" data-toggle="tab">Asserts <span class="badge">2/6</span></a></li>
+                    <li><a href="#res-tab-assert" data-toggle="tab">Asserts <span id="assertResultCount" class="badge">0/0</span></a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="res-tab-body">
@@ -347,9 +347,12 @@
                     </div>
                      <div class="tab-pane" id="res-tab-assert">
                         <div><br>
+                        	<p><div class="success-icon circle"></div><span>0</span> Success&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <div class="failure-icon circle"></div><span>0</span> Failures</p>
                             <table id="res-assert-wrapper" class="table">
-                              <p><div class= "success-icon circle"></div>2 Success</p>
-                              <p><div class="failure-icon circle"></div>4 Failures</p>
+                              <thead>
+                              	<tr><th>Status</th><th>Expression</th><th>Comparator</th><th>Expected</th><th>Actual</th><tr>
+                              </thead>
                             </table>
                         </div>
                         <br><br>

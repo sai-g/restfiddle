@@ -18,6 +18,7 @@ package com.restfiddle.controller.rest;
 import java.util.Date;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,6 @@ import com.restfiddle.dto.NodeDTO;
 import com.restfiddle.dto.RfRequestDTO;
 import com.restfiddle.dto.StatusResponse;
 import com.restfiddle.entity.BaseNode;
-import com.restfiddle.entity.Conversation;
 import com.restfiddle.entity.GenericEntity;
 import com.restfiddle.entity.GenericEntityField;
 
@@ -83,11 +83,11 @@ public class GenerateApiController {
 	rfRequestDTO.setMethodType("GET");
 	conversationDTO.setRfRequestDTO(rfRequestDTO);
 
-	Conversation createdConversation = conversationController.create(conversationDTO);
+	ConversationDTO createdConversation = conversationController.create(conversationDTO);
 	conversationDTO.setId(createdConversation.getId());
 
 	String nodeName = "Get List of " + entityNode.getName();
-	BaseNode createdNode = createNode(nodeName, entityNode.getId(), projectId, conversationDTO);
+	NodeDTO createdNode = createNode(nodeName, entityNode.getId(), projectId, conversationDTO);
 
 	// API to GENERATE >> Get Entity Data By Id
 	conversationDTO = new ConversationDTO();
@@ -140,7 +140,7 @@ public class GenerateApiController {
 
 	jsonObject = getFieldJson(genericEntity);
 	// id is required in case of update.
-	jsonObject.put("id", "{uuid}");
+	jsonObject.put("_id", "{uuid}");
 
 	rfRequestDTO.setApiBody(jsonObject.toString(4));
 	conversationDTO.setRfRequestDTO(rfRequestDTO);
@@ -154,12 +154,12 @@ public class GenerateApiController {
 	return null;
     }
 
-    private BaseNode createNode(String nodeName, String parentId, String projectId, ConversationDTO conversationDTO) {
+    private NodeDTO createNode(String nodeName, String parentId, String projectId, ConversationDTO conversationDTO) {
 	NodeDTO childNode = new NodeDTO();
 	childNode.setName(nodeName);
 	childNode.setProjectId(projectId);
 	childNode.setConversationDTO(conversationDTO);
-	BaseNode createdNode = nodeController.create(parentId, childNode);
+	NodeDTO createdNode = nodeController.create(parentId, childNode);
 	return createdNode;
     }
 
@@ -171,12 +171,22 @@ public class GenerateApiController {
 	    String type = genericEntityField.getType();
 	    if ("STRING".equalsIgnoreCase(type)) {
 		jsonObject.put(genericEntityField.getName(), "");
-	    } else if ("LONG".equalsIgnoreCase(type)) {
+	    } else if ("NUMBER".equalsIgnoreCase(type)) {
 		jsonObject.put(genericEntityField.getName(), Long.valueOf(1));
-	    } else if ("INTEGER".equalsIgnoreCase(type)) {
-		jsonObject.put(genericEntityField.getName(), Integer.valueOf(1));
+	    } else if ("BOOLEAN".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), false);
 	    } else if ("DATE".equalsIgnoreCase(type)) {
 		jsonObject.put(genericEntityField.getName(), new Date());
+	    } else if ("NUMBER".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), Long.valueOf(1));
+	    } else if ("OBJECT".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), new JSONObject());
+	    } else if ("ARRAY".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), new JSONArray());
+	    } else if ("Geographic point".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), new JSONObject("{\"lat\" : 18.5204303,\"lng\" : 73.8567437}"));
+	    } else if ("relation".equalsIgnoreCase(type)) {
+		jsonObject.put(genericEntityField.getName(), new JSONObject("{\"_rel\":{\"entity\" : \"{Entity Name}\",\"_id\" : \"{Entity _id}\"}}"));
 	    }
 	}
 	return jsonObject;

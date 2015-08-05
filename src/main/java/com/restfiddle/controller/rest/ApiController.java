@@ -56,7 +56,9 @@ import com.restfiddle.entity.Conversation;
 import com.restfiddle.entity.RfRequest;
 import com.restfiddle.entity.User;
 import com.restfiddle.exceptions.ApiException;
+import com.restfiddle.handler.AssertHandler;
 import com.restfiddle.handler.http.GenericHandler;
+import com.restfiddle.util.EntityToDTO;
 
 @RestController
 @EnableAutoConfiguration
@@ -79,11 +81,14 @@ public class ApiController {
 
     @Autowired
     private RfResponseRepository rfResponseRepository;
+    
+    @Autowired
+    private AssertHandler assertHandler; 
 
     @RequestMapping(value = "/api/processor", method = RequestMethod.POST, headers = "Accept=application/json")
-    RfResponseDTO requestProcessor(@RequestBody RfRequestDTO rfRequestDTO) {
+    ConversationDTO requestProcessor(@RequestBody RfRequestDTO rfRequestDTO) {
 	Conversation existingConversation = null;
-	Conversation conversationForLogging = null;
+	Conversation currentConversation = null;
 
 	// TODO : Get RfRequest Id if present as part of this request and update the existing conversation entity.
 	// Note : New conversation entity which is getting created below is still required for logging purpose.
@@ -92,49 +97,70 @@ public class ApiController {
 	    return null;
 	} else if (rfRequestDTO.getId() != null && !rfRequestDTO.getId().isEmpty()) {
 	    RfRequest rfRequest = rfRequestRepository.findOne(rfRequestDTO.getId());
-	    String conversationId = rfRequest.getConversationId();
-	    existingConversation = conversationRepository.findOne(conversationId);
+	    String conversationId = rfRequest != null ? rfRequest.getConversationId() : null;
+	    existingConversation = conversationId != null ? conversationRepository.findOne(conversationId) : null;
+	    //finding updated existing conversation 
+	    existingConversation = existingConversation != null ? nodeRepository.findOne(existingConversation.getNodeId()).getConversation() : null;
+	    rfRequestDTO.setAssertionDTO(EntityToDTO.toDTO(existingConversation.getRfRequest().getAssertion()));
 	}
 
 	long startTime = System.currentTimeMillis();
 	RfResponseDTO result = genericHandler.processHttpRequest(rfRequestDTO);
 	long endTime = System.currentTimeMillis();
 	long duration = endTime - startTime;
+	
+	assertHandler.runAssert(result);
 
-	conversationForLogging = ConversationConverter.convertToEntity(rfRequestDTO, result);
+	currentConversation = ConversationConverter.convertToEntity(rfRequestDTO, result);
+	
+	if (existingConversation != null) {
+	    currentConversation.getRfRequest().setAssertion(existingConversation.getRfRequest().getAssertion());
+	}
 
-	rfRequestRepository.save(conversationForLogging.getRfRequest());
-	rfResponseRepository.save(conversationForLogging.getRfResponse());
+	
+	rfRequestRepository.save(currentConversation.getRfRequest());
+	rfResponseRepository.save(currentConversation.getRfResponse());
 
-	conversationForLogging.setDuration(duration);
+	currentConversation.setDuration(duration);
 	
 	Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	if(principal instanceof User){
-	    conversationForLogging.setLastModifiedBy((User) principal);
+	    currentConversation.setLastModifiedBy((User) principal);
 	}
 	
-	conversationForLogging.setCreatedDate(new Date());
-	conversationForLogging.setLastModifiedDate(new Date());
+	Date currentDate = new Date();
+	currentConversation.setCreatedDate(currentDate);
+	currentConversation.setLastModifiedDate(currentDate);
 	try {
-	    conversationForLogging = conversationRepository.save(conversationForLogging);
+	    currentConversation = conversationRepository.save(currentConversation);
 
-	    conversationForLogging.getRfRequest().setConversationId(conversationForLogging.getId());
-	    rfRequestRepository.save(conversationForLogging.getRfRequest());
+	    currentConversation.getRfRequest().setConversationId(currentConversation.getId());
+	    rfRequestRepository.save(currentConversation.getRfRequest());
 
 	    // Note : existingConversation will be null if the request was not saved previously.
-	    if (existingConversation != null) {
-		existingConversation.setRfRequest(conversationForLogging.getRfRequest());
-		existingConversation.setRfResponse(conversationForLogging.getRfResponse());
-		existingConversation.setDuration(duration);
+	    if (existingConversation != null && existingConversation.getNodeId() != null) {
+		BaseNode node = nodeRepository.findOne(existingConversation.getNodeId());
+		currentConversation.setNodeId(node.getId());
+		currentConversation.setName(node.getName());
+		
+		node.setConversation(currentConversation);
+		node.setLastModifiedDate(currentDate);
+		if(principal instanceof User){
+		    currentConversation.setLastModifiedBy((User) principal);
+		}
+		nodeRepository.save(node);
 	    }
+	    
+	    conversationRepository.save(currentConversation);
 
 	} catch (InvalidDataAccessResourceUsageException e) {
 	    throw new ApiException("Please use sql as datasource, some of features are not supported by hsql", e);
 	}
 	ConversationDTO conversationDTO = new ConversationDTO();
 	conversationDTO.setDuration(duration);
+	conversationDTO.setRfResponseDTO(result);
 	result.setItemDTO(conversationDTO);
-	return result;
+	return conversationDTO;
     }
 
     @RequestMapping(value = "/api/processor/projects/{id}", method = RequestMethod.GET)
@@ -169,15 +195,15 @@ public class ApiController {
 		if (conversation != null && conversation.getRfRequest() != null) {
 		    RfRequest rfRequest = conversation.getRfRequest();
 		    String methodType = rfRequest.getMethodType();
-		    String apiUrl = rfRequest.getApiUrlString();
-		    String apiBody = rfRequest.getApiBodyString();
+		    String apiUrl = rfRequest.getApiUrl();
+		    String apiBody = rfRequest.getApiBody();
 		    if (methodType != null && !methodType.isEmpty() && apiUrl != null && !apiUrl.isEmpty()) {
 			RfRequestDTO rfRequestDTO = new RfRequestDTO();
 			rfRequestDTO.setMethodType(methodType);
 			rfRequestDTO.setApiUrl(apiUrl);
 			rfRequestDTO.setApiBody(apiBody);
 
-			RfResponseDTO rfResponseDTO = requestProcessor(rfRequestDTO);
+			RfResponseDTO rfResponseDTO = requestProcessor(rfRequestDTO).getRfResponseDTO();
 			logger.debug(baseNode.getName() + " ran with status : " + rfResponseDTO.getStatus());
 			ConversationDTO conversationDTO = rfResponseDTO.getItemDTO();
 

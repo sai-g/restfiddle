@@ -37,8 +37,7 @@ import com.restfiddle.dto.FormDataDTO;
 import com.restfiddle.dto.NodeDTO;
 import com.restfiddle.dto.RfHeaderDTO;
 import com.restfiddle.dto.RfRequestDTO;
-import com.restfiddle.entity.BaseNode;
-import com.restfiddle.entity.Conversation;
+import com.restfiddle.entity.Project;
 
 @RestController
 @Transactional
@@ -51,6 +50,9 @@ public class FileUploadController {
     @Autowired
     private ConversationController conversationController;
 
+    @Autowired
+    private ProjectController projectController;
+    
     @RequestMapping(value = "/api/import", method = RequestMethod.POST)
     public @ResponseBody
     void upload(@RequestParam("projectId") String projectId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
@@ -64,11 +66,14 @@ public class FileUploadController {
 		String collectionName = pmCollection.getString("name");
 		System.out.println(collectionName);
 		//
+		Project project = projectController.findById(null, projectId);
+		
 		NodeDTO collectionNodeDTO = new NodeDTO();
 		collectionNodeDTO.setName(collectionName);
 		collectionNodeDTO.setNodeType(NodeType.FOLDER.name());
 		collectionNodeDTO.setProjectId(projectId);
-		BaseNode collectionNode = nodeController.create(projectId, collectionNodeDTO);
+		
+		NodeDTO collectionNode = nodeController.create(project.getProjectRef().getId(), collectionNodeDTO);
 
 		JSONArray requests = pmCollection.getJSONArray("requests");
 		int len = requests.length();
@@ -123,7 +128,7 @@ public class FileUploadController {
 		    }
 
 		    conversationDTO.setRfRequestDTO(rfRequestDTO);
-		    Conversation createdConversation = conversationController.create(conversationDTO);
+		    ConversationDTO createdConversation = conversationController.create(conversationDTO);
 		    conversationDTO.setId(createdConversation.getId());
 
 		    // Request Node
@@ -132,7 +137,7 @@ public class FileUploadController {
 		    childNode.setDescription(requestDescription);
 		    childNode.setProjectId(projectId);
 		    childNode.setConversationDTO(conversationDTO);
-		    BaseNode createdChildNode = nodeController.create(collectionNode.getId(), childNode);
+		    NodeDTO createdChildNode = nodeController.create(collectionNode.getId(), childNode);
 		    System.out.println("created node : " + createdChildNode.getName());
 		}
 	    } catch (Exception e) {

@@ -4,7 +4,7 @@
         <i id="col1-toggle-icon" class="fa fa-angle-double-left"></i>
     </button>
     &nbsp;
-    <div class="btn-group">
+    <div class="btn-group" id="newRequestDropdown">
         <button class="btn btn-default btn-sm" data-toggle="modal" id="requestBtn">New Request</button>
         <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
@@ -22,7 +22,7 @@
         <button class="btn btn-default btn-sm run-project"  data-toggle="tooltip" data-placement="bottom" data-container="body" title="Run project lets you run requests together.">Run Project</button>
     </div>
     &nbsp;&nbsp;
-    <div class="btn-group">
+    <div class="btn-group" id="moreOptionsDropdown">
         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
             More&nbsp;&nbsp;<span class="caret"></span>
         </button>
@@ -36,12 +36,6 @@
             <li><a class="rf-font-12" data-toggle="modal" data-target="#deleteNodeModal">Delete Node</a></li>
             <li class="divider"></li>
             <li><a class="rf-font-12" data-toggle="modal" data-target="#importModal">Import</a></li>
-            <li class="divider"></li>
-            <li><a class="rf-font-12" data-toggle="modal" data-target="#editProjectModal">Edit Project</a></li>
-            <li><a class="rf-font-12" data-toggle="modal" data-target="#deleteProjectModal">Delete Project</a></li>
-            <li class="divider"></li>
-            <li><a class="rf-font-12" data-toggle="modal" data-target="#editWorkspaceModal">Edit Workspace</a></li>
-            <li><a class="rf-font-12" data-toggle="modal" data-target="#deleteWorkspaceModal">Delete Workspace</a></li>
         </ul>
     </div>
 
@@ -57,6 +51,6 @@
     <ul class="nav nav-pills nav-stacked rf-left-nav" id="history-items">
     </ul>
 
-    <div id="tree"></div>
+    <div id="tree" class="fancytree-colorize-hover"></div>
     <br><br>
 </div>

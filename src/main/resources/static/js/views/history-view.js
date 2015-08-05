@@ -19,16 +19,30 @@ define(function(require) {
 			var conversation = new ConversationModel({
 				id : $(event.currentTarget).data('historyId')
 			});
+            var nodeName = '';
+            var historyId;
 			conversation.fetch({
 				success : function(response) {
-                    //TODO : Setting request name temporarily.
-                    if(response.get('name') == null || response.get('name') == ''){
+                    historyId = response.get('nodeId');
+                    $.ajax({
+                        url : APP.config.baseUrl + '/nodes/'+historyId,
+                        type : 'get',
+                        dataType : 'json',
+                        contentType : "application/json",
+                        success : function(response) {
+                             $('#apiRequestName').html(response.name);
+                        }
+                    });
+                    
+                    if(nodeName == ''){
                     	response.set('name','Request');
                     }
+ 
                     APP.conversation.render(response);
                     ConversationEvents.triggerChange(response ? response.id : null);
                 }
             });
+             
 		},
 		
 		render : function(pageNumber) {
@@ -95,6 +109,8 @@ var HistoryView = Backbone.View.extend({
 	},
 	
 	render : function(response) {
+        //ToDo: When starred nodes will be workspace specific, add 'workspace/<workspaceId>' before "starred" in url
+        window.history.pushState("", "activityLog", APP.config.root+"activityLog");
 		this.$el.html('');
         
         var historyList = response.data;
