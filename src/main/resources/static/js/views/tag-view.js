@@ -55,8 +55,7 @@ define(function(require) {
         },
 
 		showTaggedNodes : function(){
-			console.log("Inside showTaggedNodes");
-            window.history.pushState("", "tag", APP.config.root + "workspaces/" + APP.appView.getCurrentWorkspaceId() + "/tags/"+this.model.get('id'));
+			/*console.log("Inside showTaggedNodes");
 			$('#rf-col-1-body').find('li').each(function(){
 				$(this).removeClass('active');
 			});
@@ -66,13 +65,14 @@ define(function(require) {
 			$('#history-items').hide();
 			$('#tagged-items').show();
 			var taggedNodeView = new TaggedNodeView();
-			taggedNodeView.showTaggedNodes(this.model.get('id'));
+			taggedNodeView.showTaggedNodes(this.model.get('id'));*/
 		}
 	});
 
 	var TagView = Backbone.View.extend({
 	    el : '#rfTags',
 	    addOne : function(model){
+	    		model.set('workspaceId',APP.appView.getCurrentWorkspaceId());
 				var tagListView = new TagListItemView({model: model});
 				this.$el.append(tagListView.render().el);
 				tagListView.$el.find('a').trigger('click');
@@ -83,12 +83,20 @@ define(function(require) {
 		},
 			
 		render : function(isDefautlView) {
+			var activeTag = this.$el.find('.active')[0];
+			if(activeTag)
+				var activeTagId = $(activeTag).children('a').attr('id');
+			
 	        this.$el.html('');
 			_.each(this.collection.models,function(p, index){
+				p.set('workspaceId',APP.appView.getCurrentWorkspaceId());
 				var tagListView = new TagListItemView({model: p});
 				this.$el.append(tagListView.render().el);
 			},this);
 			console.log("TagView#render");
+			
+			if(activeTagId)
+				$('#'+activeTagId).parent('li').addClass('active');
 		}
 	});
 

@@ -28,8 +28,8 @@
             <h6 class="rf-h6 members-width">Misc</h6>
         </div>
         <ul class="nav nav-pills nav-stacked rf-left-nav">
-            <li class="list-view-menu-item starred"><a href="#"><span class="glyphicon glyphicon-star"></span>&nbsp;&nbsp;Starred</a></li>
-            <li class="list-view-menu-item history"><a href="#"><span class="glyphicon glyphicon-time"></span>&nbsp;&nbsp;Activity Log
+            <li class="list-view-menu-item starred"><a href="#/starred"><span class="glyphicon glyphicon-star"></span>&nbsp;&nbsp;Starred</a></li>
+            <li class="list-view-menu-item history"><a href="#/activityLog"><span class="glyphicon glyphicon-time"></span>&nbsp;&nbsp;Activity Log
             </a></li>
             <li><a href="#" data-toggle="modal" data-target="#globalSettingsModal"> <span class="glyphicon glyphicon-wrench"></span>&nbsp;&nbsp; Settings
             </a></li>
@@ -39,7 +39,7 @@
         <br>
         <div>
             <h6 class="rf-h6 members-width">Members</h6>
-            <button class="btn btn-default btn-xs pull-right rf-btn-margin-2" data-toggle="modal" data-target="#collaboratorModal" >
+            <button class="btn btn-default btn-xs pull-right rf-btn-margin-2" id="manageCollaboratorsMenu" data-toggle="modal" data-target="#manageCollaboratorsModal" >
                 <span class="glyphicon glyphicon-plus rf-plus-font"></span>
             </button>
         </div>

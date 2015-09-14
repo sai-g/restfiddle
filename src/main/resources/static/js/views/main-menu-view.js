@@ -7,9 +7,11 @@ define(function(require) {
 	require("libs/jquery.validate");
 	var Workspace = require('models/workspace');
 	var ProjectModel = require("models/project");
+    var UserModel = require("models/user");
 	var TagModel = require("models/tag");
 	var NodeModel = require("models/node");
 	var ProjectView = require("views/project-view");
+    var UserView = require("views/user-view");
 	var StarView = require("views/star-view");
 	var TreeView = require("views/tree-view");
 	var TagView = require('views/tag-view');
@@ -40,7 +42,7 @@ define(function(require) {
 		APP.socketConnector.$el.show();
 	});
 	
-	$(".starred").unbind("click").bind("click", function() {
+	/*$(".starred").unbind("click").bind("click", function() {
 		$('#rf-col-1-body').find('li').each(function(){
 			$(this).removeClass('active');
 		});
@@ -61,9 +63,9 @@ define(function(require) {
 		$('#tagged-items').hide();
 		$('#history-items').hide();
 		$('#starred-items').show();
-	});
+	});*/
 
-	$(".history").unbind("click").bind("click", function() {
+	/*$(".history").unbind("click").bind("click", function() {
 		$('#rf-col-1-body').find('li').each(function(){
 			$(this).removeClass('active');
 		});
@@ -86,7 +88,7 @@ define(function(require) {
 		$('#tagged-items').hide();
 		$('#starred-items').hide();
 		$('#history-items').show();
-	});
+	}); */
 
 	$('#projectCreationForm').validate({
 		messages : {
@@ -167,43 +169,45 @@ $('#tagTextField').keyup(function() {
 $("#saveTagBtn").unbind("click").bind("click", function() {
 	if($("#tagForm").valid()){
 		var that = this;
-        APP.workspaces.fetch({
-				success : function(response){
-					var currentWorkspace = _.findWhere(response.models,{id : APP.appView.getCurrentWorkspaceId()});
-					var tags = currentWorkspace.get('tags');
-					var tagWithSameName = _.findWhere(tags,{name : $("#tagTextField").val()});
-					if(!tagWithSameName){
-						var tag = new TagModel({
-							name : $("#tagTextField").val(),
-							description : $("#tagTextArea").val()
-						});
-						tag.save(null, {
-							success : function(response) {
-							    var tagsView = new TagsView();
-                                tagsView.addOne(tag);
-							    tagsView.showTags();
-								$("#tagTextField").val("");
-							    $("#tagTextArea").val("");
-							    $('#tagModal').modal("hide");
-                                $('#tree').show();
-                                var node = new NodeModel({
+		APP.workspaces.fetch({
+			success : function(response) {
+				var currentWorkspace = _.findWhere(response.models, {
+					id : APP.appView.getCurrentWorkspaceId()
+				});
+				var tags = currentWorkspace.get('tags');
+				var tagWithSameName = _.findWhere(tags, {
+					name : $("#tagTextField").val()
+				});
+				if (!tagWithSameName) {
+					var tag = new TagModel({
+						name : $("#tagTextField").val(),
+						description : $("#tagTextArea").val()
+					});
+					tag.save(null, {
+						success : function(response) {
+
+							$("#tagTextField").val("");
+							$("#tagTextArea").val("");
+							$('#tagModal').modal("hide");
+
+							var node = new NodeModel({
 								id : APP.appView.getCurrentRequestNodeId()
 							});
 							node.fetch({
 								success : function(response) {
 									APP.tagsLabel.display(response.get('tags'));
 								}
-							});	
-							},
-							error : function(e) {
-								alert('Some unexpected error occurred Please try later.');
-							}
-						});
-					}else{
-						$('#tagTextField').after('<label class="text-danger" id="tag-name-error">Tag name already exists</label>');
-					}
+							});
+						},
+						error : function(e) {
+							alert('Some unexpected error occurred Please try later.');
+						}
+					});
+				} else {
+					$('#tagTextField').after('<label class="text-danger" id="tag-name-error">Tag name already exists</label>');
 				}
-			})
+			}
+		})
 	}
 });	
 
@@ -585,52 +589,19 @@ $("#deleteProjectBtn").bind("click", function() {
     $("#deleteProjectModal").modal('hide');
 });
 
-		$("#collaboratorModal").on('show.bs.modal',function(e){
-			APP.users.fetch({
-			    success : function(response){
-			    	console.log(response)
-					$('#collaborators').html('');
-					console.log(response);
-					response.each(function(user) {
-						$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
-					});
+$('#manageCollaboratorsModal .modal-body').on('click', '#addCollaborator', function(){
+    $('#addCollaboratorForm').show();
+    $("#collaboratorName").val("");
+    $("#collaboratorEmailId").val("");
+    $("#collaboratorPassword").val("");
+});
 
-					$(".deleteCollaborator").each(function(i, element){
-				        $(element).click(function(event){
-				           	$.ajax({
-								url : APP.config.baseUrl + '/users/' + event.currentTarget.dataset.id,
-								type : 'delete',
-								contentType : "application/json",
-								success : function(data) {
-				                    APP.users.fetch({
-				                        success : function(response){
-				                        	$("#rfUsers").html('');
-				                        	$('#collaborators').html('');
-										    response.each(function(user) {
-												$("#rfUsers").append("<li>&nbsp;&nbsp;<span class='glyphicon glyphicon-user'></span>&nbsp;&nbsp;"+user.attributes.name+"</li>");
-										    });	
-										    response.each(function(user) {
-												$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash' id = 'deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
-											});			
-							         	}
-							    	 });
-								}
-			            	});
-				        });
-    				});	
-			    }	
-			});
-            $('#addCollaboratorForm').hide();
-		});
-
-		$('#addCollaborator').bind('click',function(){
-			$('#addCollaboratorForm').show();
-			$("#collaboratorName").val("");
-			$("#collaboratorEmailId").val("");
-			$("#collaboratorPassword").val("");
-		});
-
-		$("#saveCollaborator").bind("click",function(){
+$('#manageCollaboratorsModal .modal-body').on('click', '#saveCollaborator', function(){
+    if($("#addCollaboratorForm").valid()){
+        APP.users.fetch({
+			success : function(response){
+            var collaboratorWithSameEmail = response.findWhere({email : $("#collaboratorEmailId").val()});
+            if(!collaboratorWithSameEmail){
 			$.ajax({
 				url : APP.config.baseUrl + '/users',
 				type : 'post',
@@ -647,20 +618,37 @@ $("#deleteProjectBtn").bind("click", function() {
 					$("#collaboratorPassword").val("");
 					$("#collaboratorEmailId").val("");
 					$('#addCollaboratorForm').hide();
-					
 					APP.users.fetch({
-						success : function(response){
-		                    $("#rfUsers").html('');
-                        	$('#collaborators').html('');
-						    response.each(function(user) {
-								$("#rfUsers").append("<li>&nbsp;&nbsp;<span class='glyphicon glyphicon-user'></span>&nbsp;&nbsp;"+user.attributes.name+"</li>");
-						    });	
-						    response.each(function(user) {
-								$("#collaborators").append("<li>&nbsp;"+user.attributes.name+"&nbsp;&nbsp;"+user.attributes.email+"&nbsp;&nbsp;&nbsp;&nbsp;<span class='glyphicon glyphicon-trash' id = 'deleteCollaborator' data-id = '"+ user.attributes.id+"'></span></li><br>");					
-							});					
+						success : function(response){	
+                            var userList = [];
+                            response.each(function(user) {
+                                userList.push(new UserModel(user));
+                            });
+				            var userView = new UserView({model : userList});
+                            userView.handleUsers();
+                            userView.showUsers();
 					    }
 					});
 		        }
-		    });    
-	});
+		    });
+            }
+                else{
+						$('#collaboratorEmailId').after('<label class="text-danger" id="collaborator-add-error">Email id already exists</label>');
+					}
+            } //success
+                
+             }); 
+            }
+	   });
+    
+$('#manageCollaboratorsModal .modal-body').on('keyup', '#collaboratorEmailId', function(){
+    if($('#collaboratorEmailId').val() == ''){
+    	$('#collaborator-add-error').remove();
+    };
+});
+
+$("#manageCollaboratorsModal").on('show.bs.modal',function(e){
+	$("#collaborator-add-error").text("");
+});
+    
 });

@@ -25,6 +25,16 @@
 					<h4 class="modal-title">New Entity</h4>
 				</div>
 				<div class="modal-body">
+					<div class="btn-group">
+				        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+				            Predefined Entity&nbsp;&nbsp;<span class="caret"></span>
+				        </button>
+						<ul class="dropdown-menu">
+	            			<li><a class="rf-font-12" data-toggle="modal" data-target="#createUserModal">User Entity</a></li>
+	            			<li><a class="rf-font-12" data-toggle="modal" data-target="#createRoleModal">Role Entity</a></li>
+	            		</ul>
+	            	</div>
+	            	<br> <br>
 					<form id = "createNewEntityForm">
 					<input type="text" id="newEntityName" class="form-control" placeholder="Enter Entity Name" name = "entityName" required>
                     <p class="text-danger" id="new-entity-error"></p>
@@ -41,6 +51,42 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					<button type="button" class="btn btn-primary" id="createNewEntityBtn">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="createUserModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Create User Entity</h4>
+				</div>
+
+				<div class="modal-body">
+					This will create system defined entity User. Are you sure you want to create?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+					<button type="button" class="btn btn-primary" id="createUserEntity">Yes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="createRoleModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Create Role Entity</h4>
+				</div>
+
+				<div class="modal-body">
+					This will create system defined entity Role. Are you sure you want to create?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+					<button type="button" class="btn btn-primary" id="createRoleEntity">Yes</button>
 				</div>
 			</div>
 		</div>
@@ -180,32 +226,22 @@
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 					<h4 class="modal-title" id="myModalLabel">Manage Collaborators</h4>
 				</div>
-				<div class="modal-body">
-					<table class="table table-bordered">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Name</th>
-								<th>Email</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>1</td>
-								<td>RF Admin</td>
-								<td>rf-admin@example.com</td>
-								<td style="color:lightgray;">Delete</td>
-							</tr>
-							<tr>
-								<td>2</td>
-								<td>RF User</td>
-								<td>rf-user@example.com</td>
-								<td>Delete</td>
-							</tr>
-						</tbody>
-					</table>			
-				</div>
+                <div class="modal-body">
+				<div id= "collaborators"></div>
+				<a id = "addCollaborator">Add Collaborators</a>
+				<form id = "addCollaboratorForm">
+					<div class = "row">
+						<div class = "col-lg-8 col-md-8 col-sm-10">
+							<br>
+							<input type="text" id="collaboratorName" class="form-control" name = "collaboratorName" placeholder="Name" required> <br>
+							<input type="email" id="collaboratorEmailId" class="form-control" name = "collaboratorEmailId" placeholder="Email Id" required><br>
+							<input type="password" id="collaboratorPassword" class="form-control" name = "collaboratorPassword" placeholder="Password" required>
+							<br>
+							<button type="button" class="btn btn-default pull-right" id = "saveCollaborator">Save</button>
+						</div>
+					</div>
+				</form>
+			</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 				</div>
@@ -362,7 +398,37 @@
 			</div>
 		</div>
 	</div>
-</div>	
+</div>
+
+<div class="modal fade" id="editEntityModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="editNodeModalLabel">Edit Entity</h4>
+			    </div>
+                <div class="modal-body">
+				<form id = "editNodeForm">
+					<input type="hidden" id="editEntityId"/>
+					<input type="text" id="editEntityTextField" class="form-control" placeholder="Enter Node Name" name = "editNodeName" required> <br>
+					<textarea id="editEntityTextArea" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                    <br>
+					<p>
+						<button type="button" class="btn btn-default btn-sm" id="addFieldEditEntityBtn">Add Field</button>
+					</p>
+					<div id="editEntityFieldsWrapper">
+					</div>
+					<br>
+                    <input type="checkbox" id="regenerateAPI" placeholder="Regenerate API" name = "regenerateAPI" disabled="true"> Regenerate API </input> <br>
+			    </form>
+			</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="editEntityBtn">Save changes</button>
+				</div>
+			</div>
+		</div>
+</div>
 
 <div class="modal fade" id="copyNodeModal" tabindex="-1">
 	<div class="modal-dialog">
